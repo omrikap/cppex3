@@ -22,11 +22,13 @@ int main()
 	// test operator=
 	matrix = dimMatrix;
 
-	// test destructor
-	copiedMatrix.~Matrix();
-
 	// test trace function
-	cout << "matrix trace: " << matrix.trace() << endl;
+//	matrix.trace(); // test throw
+	Matrix<int> squareMatrix(3, 3);
+	cout << "Square Matrix Trace: " << squareMatrix.trace() << endl;
+
+	// test << operator
+	cout << matrix << endl;
 
 	return 0;
 }
