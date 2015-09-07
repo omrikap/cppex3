@@ -62,39 +62,51 @@ public:
 	}
 
 	/**
-	 * The Matrix class destructor.
-	 * Destructs the elements of the vector containing the matrix object cell.
-	 */
-	~Matrix()
-	{
-		_matrix.clear(); // todo needed? check with valgrind.
-	}
-
-	/**
 	 * A move constructor.
 	 * This constructor moves a Matrix<T> object from one pointer to another.
 	 * @param other The Matrix<T> object that will be moved to the new pointer.
 	 * @return The moved Matrix<T> object with it's new address. todo verify what's returned
 	 */
 	Matrix(Matrix<T>&& other) :_rows(other._rows), _cols(other._cols), _matrixVectorSize
-	(other._matrixVectorSize) // todo test
+	(other._matrixVectorSize)
 	{
 		_rows = move(other._rows);
 		_cols = move(other._cols);
-		_matrixVectorSize = move(other._matrixVectorSize);
 		_matrix = move(other._matrix);
+		_matrixVectorSize = move(other._matrixVectorSize);
+	}
 
-//		for (int i = 0; i < _matrixVectorSize; ++i) // todo remove
+	/**
+	 * A constructor that get the dimensions of the new Matrix and its values as a vector.
+	 * @param rows The number of rows for the new Matrix.
+	 * @param rows The number of columns for the new Matrix.
+	 * @param cells A const reference to a vector of T objects.
+	 * @return A Matrix object with the specified number of rows and columns, that is initialized
+	 *         with the zeros of the type T.
+	 */
+	Matrix(unsigned int rows, unsigned int cols, const vector<T>& cells) : _rows(rows), _cols
+			(cols), _matrixVectorSize(rows * cols) // fixme coding style
+	{
+		_matrix.resize(_matrixVectorSize);
+		// initialize the matrix cells
+		for (int i = 0; i < _matrixVectorSize; ++i)
+		{
+			_matrix.at(i) = cells.at(i);
+		}
+
+//		for (T element : cells) // todo remove
 //		{
-//			_matrix.push_back(other._matrix[i]);
+//			_matrix.push_back(element);
 //		}
-//
-//		// reset other
-//		other._rows = 1;
-//		other._cols = 1;
-//		other._matrixVectorSize = 1;
-//		other._matrix.clear();
-//		other._matrix.push_back(1);
+	}
+
+	/**
+ * The Matrix class destructor.
+ * Destructs the elements of the vector containing the matrix object cell.
+ */
+	~Matrix()
+	{
+		_matrix.clear(); // todo needed? check with valgrind.
 	}
 
 	/**
@@ -129,9 +141,103 @@ public:
 //		return *this;
 	}
 
-	const Matrix<T> operator+(const Matrix<T> &other) // todo return type? implement +=?
-	{
+	// todo move assignement operator? gets rValue
 
+	/**
+     * The += operator.
+     * Add the matrix on the right side of the operator from this matrix (on the left side).
+     * @param other A reference to a matrix<T> object.
+     * @return A reference to this Matrix<T>.
+     */
+	Matrix<T>& operator+=(const Matrix<T> &other)
+	{
+		for (int i = 0; i < _matrixVectorSize; ++i)
+		{
+			_matrix.at(i) += other._matrix.at(i);
+		}
+
+		return *this;
+	}
+
+	/**
+     * The -= operator.
+     * Subtract the matrix on the right side of the operator from this matrix (on the left side).
+     * @param other A reference to a matrix<T> object.
+     * @return A reference to this Matrix<T>.
+     */
+	Matrix<T>& operator-=(const Matrix<T> &other)
+	{
+		for (int i = 0; i < _matrixVectorSize; ++i)
+		{
+			_matrix.at(i) -= other._matrix.at(i);
+		}
+
+		return *this;
+	}
+
+	/**
+     * The *= operator.
+     * Multiply the matrix on the right side of the operator with this matrix (on the left side).
+     * @param other A reference to a matrix<T> object.
+     * @return A reference to this Matrix<T>.
+     */
+	Matrix<T>& operator*=(const Matrix<T> &other)
+	{
+		_matrix.resize(_rows * other._cols, 0);
+		for (int row = 0; row < _rows; ++row)
+		{
+			for (int otherCol = 0; otherCol < other._cols; ++otherCol)
+			{
+				int dotProduct = 0;
+				for (int col = 0; col < _cols; ++col)
+				{
+					dotProduct += _matrix.at((row * _cols) + col) * other._matrix.at((col *
+							other._cols) + otherCol);
+				}
+				_matrix.at(row * _rows + otherCol) = dotProduct; // todo test
+			}
+		}
+		_cols = other._cols;
+		return *this;
+	}
+
+	/**
+	 * The + operator.
+	 * Calculate the sum of two matrices.
+	 * @param other A reference to another Matrix<T> object.
+	 * @return Matrix<T> object which is the sum of the two matrices.
+	 */
+	const Matrix<T> operator+(const Matrix<T> &other)
+	{
+		Matrix<T> result = *this;
+		result += other;
+		return result;
+	}
+
+	/**
+	 * The - operator.
+	 * Calculate the difference of two matrices.
+	 * @param other A reference to another Matrix<T> object.
+	 * @return Matrix<T> object which is the difference of the two matrices.
+	 */
+	const Matrix<T> operator-(const Matrix<T> &other)
+	{
+		Matrix<T> result = *this;
+		result -= other;
+		return result;
+	}
+
+	/**
+	 * The * operator.
+	 * Calculate the product of two matrices.
+	 * @param other A reference to another Matrix<T> object.
+	 * @return Matrix<T> object which is the product of the two matrices.
+	 */
+	const Matrix<T> operator*(const Matrix<T> &other)
+	{
+		Matrix<T> result = *this;
+		result *= other;
+		return result;
 	}
 
 	/**
@@ -154,7 +260,7 @@ public:
 		return theTrace;
 	}
 
-	friend void swap(Matrix<T>& first, Matrix<T>& second) // todo test
+	friend void swap(Matrix<T>& first, Matrix<T>& second)
 	{
 		using std::swap;
 		swap(first._rows, second._rows);
@@ -181,6 +287,19 @@ public:
 		return _cols;
 	}
 
+	/**
+	 * A getter to the matrix vector size.
+	 * @return unsinged int The number of cells.
+	 */
+	unsigned int vectorLength() const
+	{
+		return _matrixVectorSize;
+	}
+
+	/**
+	 * A getter to the matrix vector.
+	 * @return vector<T> The vector holding the matrix objects.
+	 */
 	vector<T> matrixVector() const
 	{
 		return _matrix;
@@ -208,7 +327,7 @@ ostream& operator<<(ostream &os, const Matrix<T> &matrix) // todo fix formatting
 		{
 			const int LAST_ELEMENT = matrix.cols() - 1;
 
-			os << matrix.matrixVector()[i * matrix.cols() + j];
+			os << matrix.matrixVector().at(i * matrix.cols() + j);
 			if (j < LAST_ELEMENT)
 			{
 				os << "    ";
