@@ -13,6 +13,6 @@ public:
 	{
 		return "Cannot perform the operation on a matrix with these dimensions.";
 	}
-} WrongDimensionsMatrix;
+} DimensionZeroMatrix;
 
 #endif //EX3_WRONGDIMENSIONSMATRIX_HPP
