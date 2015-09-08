@@ -4,7 +4,9 @@
 #define EX3_MATRIX_H
 
 #include <vector>
+#include <iterator>
 #include "MatrixNotSquare.hpp"
+#include "DimensionZeroMatrix.hpp"
 
 using namespace std;
 
@@ -12,6 +14,9 @@ template <class T>
 class Matrix
 {
 public:
+
+//-------------------------------------- constructors ---------------------------------------------
+
 	/**
 	 * The default constructor.
 	 * @return A new Matrix object of size 1x1.
@@ -65,7 +70,6 @@ public:
 	 * A move constructor.
 	 * This constructor moves a Matrix<T> object from one pointer to another.
 	 * @param other The Matrix<T> object that will be moved to the new pointer.
-	 * @return The moved Matrix<T> object with it's new address. todo verify what's returned
 	 */
 	Matrix(Matrix<T>&& other) :_rows(other._rows), _cols(other._cols), _matrixVectorSize
 	(other._matrixVectorSize)
@@ -87,27 +91,26 @@ public:
 	Matrix(unsigned int rows, unsigned int cols, const vector<T>& cells) : _rows(rows), _cols
 			(cols), _matrixVectorSize(rows * cols) // fixme coding style
 	{
+		// allocate the exact amount of memory
 		_matrix.resize(_matrixVectorSize);
+
 		// initialize the matrix cells
 		for (int i = 0; i < _matrixVectorSize; ++i)
 		{
 			_matrix.at(i) = cells.at(i);
 		}
-
-//		for (T element : cells) // todo remove
-//		{
-//			_matrix.push_back(element);
-//		}
 	}
 
 	/**
- * The Matrix class destructor.
- * Destructs the elements of the vector containing the matrix object cell.
- */
+	 * The Matrix class destructor.
+	 * Destructs the elements of the vector containing the matrix object cell.
+	 */
 	~Matrix()
 	{
 		_matrix.clear(); // todo needed? check with valgrind.
 	}
+
+//--------------------------------------- operators -----------------------------------------------
 
 	/**
 	 * Assignment operator.
@@ -120,25 +123,6 @@ public:
 	{
 		swap(*this, other);
 		return *this;
-
-//		// in case of self assignment, just return the same object. // todo remove
-//		if (this != &other)
-//		{
-//			// initialize this matrix data members from the other matrix.
-//			_rows = other._rows;
-//			_cols = other._cols;
-//			_matrixVectorSize = other._matrixVectorSize;
-//
-//			// clear the vector from current data.
-//			_matrix.clear();
-//
-//			// copy the matrix elements from the other matrix to the new one.
-//			for (int i = 0; i < _matrixVectorSize; ++i)
-//			{
-//				_matrix.push_back(other._matrix[i]);
-//			}
-//		}
-//		return *this;
 	}
 
 	// todo move assignement operator? gets rValue
@@ -194,7 +178,7 @@ public:
 					dotProduct += _matrix.at((row * _cols) + col) * other._matrix.at((col *
 							other._cols) + otherCol);
 				}
-				_matrix.at(row * _rows + otherCol) = dotProduct; // todo test
+				_matrix.at(row * _rows + otherCol) = dotProduct;
 			}
 		}
 		_cols = other._cols;
@@ -240,18 +224,84 @@ public:
 		return result;
 	}
 
+	bool operator==(const Matrix<T> &other) const
+	{
+		return other._matrix == _matrix;
+
+//		if(other._matrixVectorSize != _matrixVectorSize) // fixme
+//		{
+//			return false;
+//		}
+//
+//		if(other._cols != _cols)
+//		{
+//			return false;
+//		}
+//
+//		if(other._rows != _rows)
+//		{
+//			return false;
+//		}
+
+	}
+
+	bool operator!=(const Matrix<int> &other) const
+	{
+//		return !(*this == other); // fixme
+	}
+
+	T& operator()(unsigned int row, unsigned int col)
+	{
+		return _matrix.at(row * _cols + col); // todo test
+	}
+
+//------------------------------------ methods ----------------------------------------------------
+
+	/**
+	 * todo
+	 */
+	Matrix<T> trans()
+	{
+		if ((_rows == 0) || (_cols == 0))
+		{
+			throw DimensionZeroMatrix;
+		}
+
+		// create a vector for the transposed matrix cells, and allocate exact memory size
+		vector<T> transposed;
+		transposed.resize(_matrixVectorSize);
+
+		// transpose the matrix
+		for (int row = 0; row < _rows; ++row)
+		{
+			for (int col = 0; col < _cols; ++col)
+			{
+				transposed.at((col * _rows) + row) = _matrix.at((row * _cols) + col);
+			}
+		}
+
+		// return a new transposed matrix
+		return Matrix<T>(_cols, _rows, transposed);
+	}
+
 	/**
 	 * @brief Calculate the trace of a square matrix.
 	 * @return int The trace of the calling matrix.
+	 * @throws DimensionZeroMAtrix, when the matrix's dimensions are zero.
 	 * @throws MatrixNotSquare exception, when the matrix is not square.
 	 */
-	T trace()
+	T trace() const
 	{
+		if ((_rows == 0) || (_cols == 0))
+		{
+			throw DimensionZeroMatrix;
+		}
+
 		if (_rows != _cols)
 		{
-			cout << "not a squre matrix!" << endl; // todo remove
 			throw MatrixNotSquare;
 		}
+
 		T theTrace = T(0);
 		for (int i = 0; i < _rows; ++i)
 		{
@@ -260,7 +310,12 @@ public:
 		return theTrace;
 	}
 
-	friend void swap(Matrix<T>& first, Matrix<T>& second)
+	/**
+	 * Swap two matrices.
+	 * @param first The first matrix.
+	 * @param second The second matrix.
+	 */
+	friend void swap(Matrix<T>& first, Matrix<T>& second) // todo why error?
 	{
 		using std::swap;
 		swap(first._rows, second._rows);
@@ -268,6 +323,8 @@ public:
 		swap(first._matrixVectorSize, second._matrixVectorSize);
 		swap(first._matrix, second._matrix);
 	}
+
+//-------------------------------- access - methods -----------------------------------------------
 
 	/**
 	 * A getter for the number of rows of the matrix
@@ -305,7 +362,28 @@ public:
 		return _matrix;
 	}
 
+	/**
+	 * An iterator at the beginning of the matrix.
+	 * @return iterator
+	 */
+	const iterator begin() // todo test, add const function?
+	{
+		return _matrix.begin();
+	}
+
+	/**
+	 * An iterator at the end of the matrix.
+	 * @return iterator
+	 */
+	const iterator end() // todo test, add const function?
+	{
+		return _matrix.end();
+	}
+
 private:
+
+//------------------------------------- data - members --------------------------------------------
+
 	unsigned int _rows; /** The number of rows in the matrix */
 	unsigned int _cols; /** The number of columns in the matrix */
 	unsigned int _matrixVectorSize; /** The size of the vector representing the matrix */
@@ -313,10 +391,10 @@ private:
 };
 
 /**
-     * The << operator.
-     * Used to print the matrix with cout.
-     * @return ostream reference With a formatted text version of the matrix.
-     */
+ * The << operator.
+ * Used to print the matrix with cout.
+ * @return ostream reference With a formatted text version of the matrix.
+ */
 template <class T>
 ostream& operator<<(ostream &os, const Matrix<T> &matrix) // todo fix formatting
 {
