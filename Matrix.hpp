@@ -95,10 +95,10 @@ public:
 			(cols), _matrixVectorSize(rows * cols) // fixme coding style
 	{
 		// verify the vector not exceed the matrix size.
-		if (cells.size() > _matrixVectorSize)
-		{
-			throw OutOfMatrixRange;
-		}
+//		if (cells.size() > _matrixVectorSize)
+//		{
+//			throw OutOfMatrixRange;
+//		}
 
 		// allocate the exact amount of memory
 		_matrix.resize(_matrixVectorSize);
@@ -146,7 +146,8 @@ public:
 	{
 		if (_rows != other._rows || _cols != other._cols)
 		{
-			throw
+//			throw
+			cout << "should throw WrongDimensionException\n";
 		}
 
 		for (int i = 0; i < _matrixVectorSize; ++i)
@@ -207,7 +208,7 @@ public:
 	 */
 	const Matrix<T> operator+(const Matrix<T> &other)
 	{
-		if (_multiThread)
+		if (!s_parallel)
 		{
 			Matrix<T> result = *this;
 			result += other;
@@ -220,11 +221,12 @@ public:
 
 			for (unsigned int i = 0; i < _rows; ++i)
 			{
-				threadVector.push_back(std::thread(oneLineAddition(i, *this, other, res)));
+				threadVector.push_back(thread(oneLineAddition, i, ref(*this),
+				                                   ref(other), ref(res)));
 			}
-			for (thread t : threadVector)
+			for (unsigned int j = 0; j < threadVector.size(); ++j)
 			{
-				t.join();
+				threadVector.at(j).join();
 			}
 			return res;
 		}
@@ -251,11 +253,35 @@ public:
 	 */
 	const Matrix<T> operator*(const Matrix<T> &other)
 	{
-		Matrix<T> result = *this;
-		result *= other;
-		return result;
+		if (!s_parallel)
+		{
+			Matrix<T> result = *this;
+			result *= other;
+			return result;
+		}
+		else
+		{
+			cout << "multi multi\n";
+			Matrix<T> res(_rows, _cols);
+			vector<thread> threadVector;
+
+			for (unsigned int i = 0; i < _rows; ++i)
+			{
+				threadVector.push_back(thread(oneLineMultiplication, i, ref(*this),
+				                              ref(other), ref(res)));
+			}
+			for (unsigned int j = 0; j < threadVector.size(); ++j)
+			{
+				threadVector.at(j).join();
+			}
+			return res;
+		}
 	}
 
+	/**
+	 * The == operator.
+	 * todo
+	 */
 	bool operator==(const Matrix<T> &other) const
 	{
 		return other._matrix == _matrix;
@@ -277,6 +303,10 @@ public:
 
 	}
 
+	/**
+	 * The != operator.
+	 * todo
+	 */
 	bool operator!=(const Matrix<T> &other) const
 	{
 		return !(*this == other);
@@ -384,22 +414,26 @@ public:
 		swap(first._matrix, second._matrix);
 	}
 
+	/**
+	 * A static function to select parallel computation mod.
+	 * @param setter A boolean value to determine the parallel mod.
+	 */
 	static void setParallel(bool setter) // todo if-cosmetics
 	{
 		if (setter)
 		{
-			_multiThread = true;
+			s_parallel = true;
 
-			if (!_multiThread)
+			if (!s_parallel)
 			{
 				cout << "_multithread is true" << endl;
 			}
 		}
 		else
 		{
-			_multiThread = false;
+			s_parallel = false;
 
-			if (_multiThread)
+			if (s_parallel)
 			{
 				cout << "_multithread is true" << endl;
 			}
@@ -444,23 +478,23 @@ public:
 		return _matrix;
 	}
 
-	/**
-	 * An iterator at the beginning of the matrix.
-	 * @return iterator
-	 */
-	const iterator begin() // todo test, add const function?
-	{
-		return _matrix.begin();
-	}
-
-	/**
-	 * An iterator at the end of the matrix.
-	 * @return iterator
-	 */
-	const iterator end() // todo test, add const function?
-	{
-		return _matrix.end();
-	}
+//	/**
+//	 * An iterator at the beginning of the matrix.
+//	 * @return iterator
+////	 */
+//	const std::iterator<vector> begin() // todo test, add const function?
+//	{
+//		return _matrix.begin();
+//	}
+//
+//	/**
+//	 * An iterator at the end of the matrix.
+//	 * @return iterator
+//	 */
+//	const std::iterator<vector> end() // todo test, add const function?
+//	{
+//		return _matrix.end();
+//	}
 
 private:
 
@@ -470,7 +504,7 @@ private:
 	unsigned int _cols; /** The number of columns in the matrix */
 	unsigned int _matrixVectorSize; /** The size of the vector representing the matrix */
 	vector<T> _matrix; /** A pointer to the array of T type objects of the matrix. */
-	static bool _multiThread = false;
+	static bool s_parallel; /** Static flag for multi threaded calculation */
 
 	/**
 	 * A helper function to perform the line addition in the multi-threaded addition operator.
@@ -487,7 +521,32 @@ private:
 			res(row, i) = rMatrix(row, i) + lMatrix(row, i);
 		}
 	}
+
+	/**
+	 *
+	 */
+	static void oneLineMultiplication(unsigned int row, const Matrix<T> &lMatrix,
+	                                  const Matrix<T> &rMatrix, Matrix<T> &res)
+	{
+		for (int otherCol = 0; otherCol < rMatrix.cols(); ++otherCol)
+		{
+			int dotProduct = 0;
+			for (int col = 0; col < lMatrix.cols(); ++col)
+			{
+				dotProduct += lMatrix.matrixVector().at((row * lMatrix.cols()) + col) *
+						lMatrix.matrixVector().at((col * lMatrix.cols()) + otherCol);
+				cout << dotProduct << endl;
+			}
+			res.matrixVector().at(row * res.rows() + otherCol) = dotProduct;
+			cout << res.matrixVector().at(row * res.rows() + otherCol) << endl;
+		}
+	}
 };
+
+//------------------------------------- end-of-class ----------------------------------------------
+
+template <class T>
+bool Matrix<T>::s_parallel = false;
 
 /**
  * The << operator.

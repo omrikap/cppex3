@@ -50,5 +50,16 @@ int main()
 	ourMat *= otherMat;
 	cout << ourMat << endl;
 
+	// test setParallel
+	Matrix<int>::setParallel(true);
+
+	// test + parallel
+	matrix = ourMat + otherMat;
+	cout << matrix << endl;
+
+	// test * parallel
+	matrix = ourMat * otherMat;
+	cout << matrix << endl;
+
 	return 0;
 }
