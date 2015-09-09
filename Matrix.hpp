@@ -182,7 +182,10 @@ public:
      */
 	Matrix<T>& operator*=(const Matrix<T> &other)
 	{
-		_matrix.resize(_rows * other._cols, 0);
+		// create a new vector of the result size to store the result
+		vector<T> resVector((size_t)_rows * other._cols);
+
+		// multiply matrices
 		for (int row = 0; row < _rows; ++row)
 		{
 			for (int otherCol = 0; otherCol < other._cols; ++otherCol)
@@ -190,13 +193,17 @@ public:
 				int dotProduct = 0;
 				for (int col = 0; col < _cols; ++col)
 				{
-					dotProduct += _matrix.at((row * _cols) + col) * other._matrix.at((col *
-							other._cols) + otherCol);
+					dotProduct += (*this)(row, col) * other(col, otherCol);
 				}
-				_matrix.at(row * _rows + otherCol) = dotProduct;
+				resVector.at(row * _rows + otherCol) = dotProduct;
 			}
 		}
+
+		// put result vector instead of previous vector, and update the columns and vector length
+		swap(_matrix, resVector);
 		_cols = other._cols;
+		_matrixVectorSize = _rows * _cols;
+
 		return *this;
 	}
 
@@ -261,7 +268,6 @@ public:
 		}
 		else
 		{
-			cout << "multi multi\n";
 			Matrix<T> res(_rows, _cols);
 			vector<thread> threadVector;
 
@@ -478,14 +484,14 @@ public:
 		return _matrix;
 	}
 
-//	/**
-//	 * An iterator at the beginning of the matrix.
-//	 * @return iterator
-////	 */
-//	const std::iterator<vector> begin() // todo test, add const function?
-//	{
-//		return _matrix.begin();
-//	}
+	/**
+	 * An iterator at the beginning of the matrix.
+	 * @return iterator
+	 */
+	const std::iterator<vector> begin() // todo test, add const function?
+	{
+		return _matrix.begin();
+	}
 //
 //	/**
 //	 * An iterator at the end of the matrix.
@@ -526,19 +532,16 @@ private:
 	 *
 	 */
 	static void oneLineMultiplication(unsigned int row, const Matrix<T> &lMatrix,
-	                                  const Matrix<T> &rMatrix, Matrix<T> &res)
+	                                  const Matrix<T> &rMatrix, Matrix<T> &res) // fixme
 	{
-		for (int otherCol = 0; otherCol < rMatrix.cols(); ++otherCol)
+		for (unsigned int rMatrixCol = 0; rMatrixCol < rMatrix.cols(); ++rMatrixCol)
 		{
 			int dotProduct = 0;
-			for (int col = 0; col < lMatrix.cols(); ++col)
+			for (unsigned int lMatrixCol = 0; lMatrixCol < lMatrix.cols(); ++lMatrixCol)
 			{
-				dotProduct += lMatrix.matrixVector().at((row * lMatrix.cols()) + col) *
-						lMatrix.matrixVector().at((col * lMatrix.cols()) + otherCol);
-				cout << dotProduct << endl;
+				dotProduct += lMatrix(row, lMatrixCol) * rMatrix(lMatrixCol, rMatrixCol);
 			}
-			res.matrixVector().at(row * res.rows() + otherCol) = dotProduct;
-			cout << res.matrixVector().at(row * res.rows() + otherCol) << endl;
+			res(row, rMatrixCol) = dotProduct;
 		}
 	}
 };
@@ -554,7 +557,7 @@ bool Matrix<T>::s_parallel = false;
  * @return ostream reference With a formatted text version of the matrix.
  */
 template <class T>
-ostream& operator<<(ostream &os, const Matrix<T> &matrix) // todo fix formatting
+ostream& operator<<(ostream &os, const Matrix<T> &matrix) // todo fix formatting, insert to class
 {
 	os << endl;
 	for (int i = 0; i < matrix.rows(); ++i)
