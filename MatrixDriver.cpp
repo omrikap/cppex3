@@ -84,5 +84,10 @@ int main()
 	resMatrix = lMatrix * rMatrix;
 	cout << "resMatrix:\n" << resMatrix << endl;
 
+
+	for (Matrix<int>::const_iterator it = resMatrix.begin(); it != resMatrix.end(); ++it)
+	{
+		cout << *it << endl;
+	}
 	return 0;
 }

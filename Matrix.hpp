@@ -13,6 +13,7 @@
 
 using namespace std; // todo remove
 
+
 template <class T>
 class Matrix
 {
@@ -484,23 +485,25 @@ public:
 		return _matrix;
 	}
 
+	typedef typename std::vector<T>::const_iterator const_iterator; /** A constant iterator type */
+
 	/**
 	 * An iterator at the beginning of the matrix.
 	 * @return iterator
 	 */
-	const std::iterator<vector> begin() // todo test, add const function?
+	const_iterator begin() const // todo test, add const function?
 	{
-		return _matrix.begin();
+		return _matrix.cbegin();
 	}
-//
-//	/**
-//	 * An iterator at the end of the matrix.
-//	 * @return iterator
-//	 */
-//	const std::iterator<vector> end() // todo test, add const function?
-//	{
-//		return _matrix.end();
-//	}
+
+	/**
+	 * An iterator at the end of the matrix.
+	 * @return iterator
+	 */
+	const_iterator end() const // todo test, add const function?
+	{
+		return _matrix.cend();
+	}
 
 private:
 
