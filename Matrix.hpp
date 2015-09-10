@@ -215,42 +215,6 @@ public:
 	}
 
 	/**
-	 * This function prevents code duplication.
-	 * Performing parallel summing or multiplication.
-	 * @param function Enum functionType to determine the function that will be executed in
-	 *        parallel mode
-	 * @param other A const reference to the matrix to the right of the operator.
-	 * @return const Matrix<T> the result of the operation performed.
-	 */
-	const Matrix<T> parallelHelper(const functionType function, const Matrix<T> &other) const
-	{
-		Matrix<T> res(_rows, _cols);
-		vector<thread> threadVector;
-
-		switch (function)
-		{
-			case SUM:
-				for (unsigned int i = 0; i < _rows; ++i)
-				{
-					threadVector.push_back(thread(oneLineAddition, i, ref(*this),
-					                              ref(other), ref(res)));
-				}
-			case MULT:
-				for (unsigned int i = 0; i < _rows; ++i)
-				{
-					threadVector.push_back(thread(oneLineMultiplication, i, ref(*this),
-					                              ref(other), ref(res)));
-				}
-		}
-
-		for (unsigned int j = 0; j < threadVector.size(); ++j)
-		{
-			threadVector.at(j).join();
-		}
-		return res;
-	}
-
-	/**
 	 * The + operator.
 	 * Calculate the sum of two matrices.
 	 * @param other A reference to another Matrix<T> object.
@@ -266,7 +230,6 @@ public:
 		}
 		else
 		{
-//			return parallelHelper(functionType::SUM, other);
 			Matrix<T> res(_rows, _cols);
 			vector<thread> threadVector;
 
@@ -312,7 +275,6 @@ public:
 		}
 		else
 		{
-//			return parallelHelper(functionType::MULT, other);
 			Matrix<T> res(_rows, _cols);
 			vector<thread> threadVector;
 
