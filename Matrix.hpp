@@ -3,7 +3,8 @@
 #ifndef EX3_MATRIX_H
 #define EX3_MATRIX_H
 
-#include <iostream>
+//---------------------------------- const and includes -------------------------------------------
+
 #include <vector>
 #include <iterator>
 #include <thread>
@@ -12,15 +13,23 @@
 #include "DimensionZeroMatrix.hpp"
 #include "OutOfMatrixRange.hpp"
 #include "BadMemoryAlloc.hpp"
+#include "WrongMatrixDimensions.hpp"
 
-using namespace std; // todo remove
+#define INIT_LENGTH 1
+#define T_CLASS_ZETO 0
 
+using namespace std;
+
+enum functionType
+{
+	SUM,
+	MULT
+};
 
 template <class T>
 class Matrix
 {
 public:
-	// todo add catch bad_alloc in every constructor.
 //-------------------------------------- constructors ---------------------------------------------
 
 	/**
@@ -28,15 +37,10 @@ public:
 	 * @return A new Matrix object of size 1x1.
 	 * @throw bad_alloc exception if memory allocation did not succeed.
 	 */
-	Matrix() try : _rows(1), _cols(1), _matrixVectorSize(1), _matrix(_matrixVectorSize, T(0))
+	Matrix() try : _rows(INIT_LENGTH), _cols(INIT_LENGTH), _matrixVectorSize(INIT_LENGTH),
+	               _data(_matrixVectorSize, T(T_CLASS_ZETO))
 	{
-//		// initialize the size of the matrix.
-//		_rows = 1;
-//		_cols = 1;
-//		_matrixVectorSize = 1;
-//
-//		// put zero in the only cell of the matrix.
-//		_matrix.push_back(T(0));
+
 	}
 	catch (bad_alloc)
 	{
@@ -52,19 +56,14 @@ public:
 	 */
 	Matrix(unsigned int rows, unsigned int cols) try : _rows(rows), _cols(cols),
 	                                                   _matrixVectorSize(rows * cols),
-	                                                   _matrix(_matrixVectorSize, T(0))
+	                                                   _data(_matrixVectorSize, T(T_CLASS_ZETO))
 	{
-		// put T zeros in the vector.
-//		for (int i = 0; i < _matrixVectorSize; ++i)
-//		{
-//			_matrix.push_back(T(0));
-//		}
+
 	}
 	catch (bad_alloc)
 	{
 		throw BadMemoryAlloc;
 	}
-
 
 	/**
 	 * A copy constructor.
@@ -74,19 +73,14 @@ public:
 	 */
 	Matrix(const Matrix<T>& other) try : _rows(other._rows), _cols(other._cols),
 	                                     _matrixVectorSize(other._matrixVectorSize),
-	                                     _matrix(other._matrix)
+	                                     _data(other._data)
 	{
-		// copy the matrix elements from the other matrix to the new one.
-//		for (int i = 0; i < _matrixVectorSize; ++i)
-//		{
-//			_matrix.at(i) = other._matrix[i];
-//		}
+
 	}
 	catch (bad_alloc)
 	{
 		throw BadMemoryAlloc;
 	}
-
 
 	/**
 	 * A move constructor.
@@ -95,12 +89,9 @@ public:
 	 */
 	Matrix(Matrix<T>&& other) try :_rows(std::move(other._rows)), _cols(std::move(other._cols)),
 	                           _matrixVectorSize(std::move(other._matrixVectorSize)),
-	                           _matrix(std::move(other._matrix))
+	                           _data(std::move(other._data))
 	{
-//		_rows = move(other._rows);
-//		_cols = move(other._cols);
-//		_matrix = move(other._matrix);
-//		_matrixVectorSize = move(other._matrixVectorSize);
+
 	}
 	catch (bad_alloc)
 	{
@@ -119,22 +110,9 @@ public:
 	Matrix(unsigned int rows, unsigned int cols, const vector<T>& cells) try : _rows(rows),
 	                                                                       _cols(cols),
 	                                                                       _matrixVectorSize(rows * cols),
-	                                                                       _matrix(cells) // fixme coding style
+	                                                                       _data(cells)
 	{
-		// verify the vector not exceed the matrix size.
-//		if (cells.size() > _matrixVectorSize)
-//		{
-//			throw OutOfMatrixRange;
-//		}
-//
-//		// allocate the exact amount of memory
-//		_matrix.resize(_matrixVectorSize);
-//
-//		// initialize the matrix cells
-//		for (int i = 0; i < _matrixVectorSize; ++i)
-//		{
-//			_matrix.at(i) = cells.at(i);
-//		}
+
 	}
 	catch (bad_alloc)
 	{
@@ -147,7 +125,7 @@ public:
 	 */
 	~Matrix()
 	{
-		_matrix.clear(); // todo needed? check with valgrind.
+		_data.clear(); // todo needed? check with valgrind.
 	}
 
 //--------------------------------------- operators -----------------------------------------------
@@ -175,13 +153,12 @@ public:
 	{
 		if (_rows != other._rows || _cols != other._cols)
 		{
-//			throw
-			std::cout << "should throw WrongDimensionException\n"; // todo remove
+			throw WrongMatrixDimensions;
 		}
 
-		for (int i = 0; i < _matrixVectorSize; ++i)
+		for (unsigned int i = 0; i < _matrixVectorSize; ++i)
 		{
-			_matrix.at(i) += other._matrix.at(i);
+			_data.at(i) += other._data.at(i);
 		}
 
 		return *this;
@@ -197,7 +174,7 @@ public:
 	{
 		for (int i = 0; i < _matrixVectorSize; ++i)
 		{
-			_matrix.at(i) -= other._matrix.at(i);
+			_data.at(i) -= other._data.at(i);
 		}
 
 		return *this;
@@ -215,12 +192,12 @@ public:
 		vector<T> resVector((size_t)_rows * other._cols);
 
 		// multiply matrices
-		for (int row = 0; row < _rows; ++row)
+		for (unsigned int row = 0; row < _rows; ++row)
 		{
-			for (int otherCol = 0; otherCol < other._cols; ++otherCol)
+			for (unsigned int otherCol = 0; otherCol < other._cols; ++otherCol)
 			{
 				T dotProduct = 0;
-				for (int col = 0; col < _cols; ++col)
+				for (unsigned int col = 0; col < _cols; ++col)
 				{
 					dotProduct += (*this)(row, col) * other(col, otherCol);
 				}
@@ -229,11 +206,47 @@ public:
 		}
 
 		// put result vector instead of previous vector, and update the columns and vector length
-		swap(_matrix, resVector);
+		swap(_data, resVector);
 		_cols = other._cols;
 		_matrixVectorSize = _rows * _cols;
 
 		return *this;
+	}
+
+	/**
+	 * This function prevents code duplication.
+	 * Performing parallel summing or multiplication.
+	 * @param function Enum functionType to determine the function that will be executed in
+	 *        parallel mode
+	 * @param other A const reference to the matrix to the right of the operator.
+	 * @return const Matrix<T> the result of the operation performed.
+	 */
+	const Matrix<T> parallelHelper(const functionType function, const Matrix<T> &other) const
+	{
+		Matrix<T> res(_rows, _cols);
+		vector<thread> threadVector;
+
+		switch (function)
+		{
+			case SUM:
+				for (unsigned int i = 0; i < _rows; ++i)
+				{
+					threadVector.push_back(thread(oneLineAddition, i, ref(*this),
+					                              ref(other), ref(res)));
+				}
+			case MULT:
+				for (unsigned int i = 0; i < _rows; ++i)
+				{
+					threadVector.push_back(thread(oneLineMultiplication, i, ref(*this),
+					                              ref(other), ref(res)));
+				}
+		}
+
+		for (unsigned int j = 0; j < threadVector.size(); ++j)
+		{
+			threadVector.at(j).join();
+		}
+		return res;
 	}
 
 	/**
@@ -252,19 +265,7 @@ public:
 		}
 		else
 		{
-			Matrix<T> res(_rows, _cols);
-			vector<thread> threadVector;
-
-			for (unsigned int i = 0; i < _rows; ++i)
-			{
-				threadVector.push_back(thread(oneLineAddition, i, ref(*this), ref(other),
-				                              ref(res)));
-			}
-			for (unsigned int j = 0; j < threadVector.size(); ++j)
-			{
-				threadVector.at(j).join();
-			}
-			return res;
+			return parallelHelper(functionType::SUM, other);
 		}
 	}
 
@@ -297,19 +298,7 @@ public:
 		}
 		else
 		{
-			Matrix<T> res(_rows, _cols);
-			vector<thread> threadVector;
-
-			for (unsigned int i = 0; i < _rows; ++i)
-			{
-				threadVector.push_back(thread(oneLineMultiplication, i, ref(*this),
-				                              ref(other), ref(res)));
-			}
-			for (unsigned int j = 0; j < threadVector.size(); ++j)
-			{
-				threadVector.at(j).join();
-			}
-			return res;
+			return parallelHelper(functionType::MULT, other);
 		}
 	}
 
@@ -335,7 +324,7 @@ public:
 			return false;
 		}
 
-		return other._matrix == _matrix;
+		return other._data == _data;
 	}
 
 	/**
@@ -360,7 +349,7 @@ public:
 			throw OutOfMatrixRange;
 		}
 
-		return _matrix.at(row * _cols + col); // todo test
+		return _data.at(row * _cols + col);
 	}
 
 	/**
@@ -375,7 +364,7 @@ public:
 			throw OutOfMatrixRange;
 		}
 
-		return _matrix.at(row * _cols + col); // todo test
+		return _data.at(row * _cols + col);
 	}
 
 //------------------------------------ methods ----------------------------------------------------
@@ -396,11 +385,11 @@ public:
 		transposed.resize(_matrixVectorSize);
 
 		// transpose the matrix
-		for (int row = 0; row < _rows; ++row)
+		for (unsigned int row = 0; row < _rows; ++row)
 		{
-			for (int col = 0; col < _cols; ++col)
+			for (unsigned int col = 0; col < _cols; ++col)
 			{
-				transposed.at((col * _rows) + row) = _matrix.at((row * _cols) + col);
+				transposed.at((col * _rows) + row) = _data.at((row * _cols) + col);
 			}
 		}
 
@@ -427,9 +416,9 @@ public:
 		}
 
 		T theTrace = T(0);
-		for (int i = 0; i < _rows; ++i)
+		for (unsigned int i = 0; i < _rows; ++i)
 		{
-			theTrace += _matrix[i*_rows + i];
+			theTrace += _data[i*_rows + i];
 		}
 		return theTrace;
 	}
@@ -445,32 +434,28 @@ public:
 		swap(first._rows, second._rows);
 		swap(first._cols, second._cols);
 		swap(first._matrixVectorSize, second._matrixVectorSize);
-		swap(first._matrix, second._matrix);
+		swap(first._data, second._data);
 	}
 
 	/**
 	 * A static function to select parallel computation mod.
 	 * @param setter A boolean value to determine the parallel mod.
 	 */
-	static void setParallel(bool setter) // todo if-cosmetics
+	static void setParallel(bool setter) // todo test
 	{
-		if (setter)
+		if (setter == s_parallel)
+		{
+			return;
+		}
+		else if (setter)
 		{
 			s_parallel = true;
-
-			if (!s_parallel)
-			{
-				std::cout << "_multithread is true" << endl;
-			}
+			std::cout << "Generix Matrix mode changed to parallel mode\n";
 		}
 		else
 		{
 			s_parallel = false;
-
-			if (s_parallel)
-			{
-				std::cout << "_multithread is true" << endl;
-			}
+			std::cout << "Generix Matrix mode changed to non-parallel mode\n";
 		}
 	}
 
@@ -509,7 +494,7 @@ public:
 	 */
 	vector<T> matrixVector() const
 	{
-		return _matrix;
+		return _data;
 	}
 
 	bool isSquareMatrix() const
@@ -524,47 +509,41 @@ public:
 	 * An iterator at the beginning of the matrix.
 	 * @return iterator
 	 */
-	iterator begin() // todo test, add const function?
+	iterator begin()
 	{
-		return _matrix.begin();
+		return _data.begin();
 	}
 
 	/**
 	 * An iterator at the end of the matrix.
 	 * @return iterator
 	 */
-	iterator end() // todo test, add const function?
+	iterator end()
 	{
-		return _matrix.end();
+		return _data.end();
 	}
 
 	/**
 	 * An iterator at the beginning of the matrix.
 	 * @return iterator
 	 */
-	const_iterator begin() const // todo test, add const function?
+	const_iterator begin() const
 	{
-		return _matrix.cbegin();
+		return _data.cbegin();
 	}
 
 	/**
 	 * An iterator at the end of the matrix.
 	 * @return iterator
 	 */
-	const_iterator end() const // todo test, add const function?
+	const_iterator end() const
 	{
-		return _matrix.cend();
+		return _data.cend();
 	}
 
 private:
 
-//------------------------------------- data - members --------------------------------------------
-
-	unsigned int _rows; /** The number of rows in the matrix */
-	unsigned int _cols; /** The number of columns in the matrix */
-	unsigned int _matrixVectorSize; /** The size of the vector representing the matrix */
-	vector<T> _matrix; /** A pointer to the array of T type objects of the matrix. */
-	static bool s_parallel; /** Static flag for multi threaded calculation */
+//------------------------------------ private - methods ------------------------------------------
 
 	/**
 	 * A helper function to perform the line addition in the multi-threaded addition operator.
@@ -583,10 +562,14 @@ private:
 	}
 
 	/**
-	 *
+	 * A helper function to perform the line multiplication in the parallel mode mltiplication.
+	 * @param row The number of row to sum.
+	 * @param lMatrix The matrix to the left of the operator.
+	 * @param rMatrix The matrix to the right of the operator.
+	 * @param res The matrix that will hold the sum of lMatrix and rMatrix.
 	 */
 	static void oneLineMultiplication(unsigned int row, const Matrix<T> &lMatrix,
-	                                  const Matrix<T> &rMatrix, Matrix<T> &res) // fixme
+	                                  const Matrix<T> &rMatrix, Matrix<T> &res)
 	{
 		for (unsigned int rMatrixCol = 0; rMatrixCol < rMatrix.cols(); ++rMatrixCol)
 		{
@@ -598,7 +581,17 @@ private:
 			res(row, rMatrixCol) = dotProduct;
 		}
 	}
+
+//------------------------------------- data - members --------------------------------------------
+
+	unsigned int _rows; /** The number of rows in the matrix */
+	unsigned int _cols; /** The number of columns in the matrix */
+	unsigned int _matrixVectorSize; /** The size of the vector representing the matrix */
+	vector<T> _data; /** A pointer to the array of T type objects of the matrix. */
+	static bool s_parallel; /** Static flag for multi threaded calculation */
 };
+
+//------------------------------------- end-of-class ----------------------------------------------
 
 template <>
 const Matrix<Complex> Matrix<Complex>::trans() const
@@ -613,19 +606,17 @@ const Matrix<Complex> Matrix<Complex>::trans() const
 	transposed.resize(_matrixVectorSize);
 
 	// transpose the matrix
-	for (int row = 0; row < _rows; ++row)
+	for (unsigned int row = 0; row < _rows; ++row)
 	{
-		for (int col = 0; col < _cols; ++col)
+		for (unsigned int col = 0; col < _cols; ++col)
 		{
-			transposed.at((col * _rows) + row) = _matrix.at((row * _cols) + col).conj();
+			transposed.at((col * _rows) + row) = _data.at((row * _cols) + col).conj();
 		}
 	}
 
 	// return a new transposed matrix
 	return Matrix<Complex>(_cols, _rows, transposed);
 }
-
-//------------------------------------- end-of-class ----------------------------------------------
 
 template <class T>
 bool Matrix<T>::s_parallel = false;
@@ -636,20 +627,14 @@ bool Matrix<T>::s_parallel = false;
  * @return ostream reference With a formatted text version of the matrix.
  */
 template <class T>
-ostream& operator<<(ostream &os, const Matrix<T> &matrix) // todo fix formatting, insert to class
+ostream& operator<<(ostream &os, const Matrix<T> &matrix)
 {
 	os << endl;
-	for (int i = 0; i < matrix.rows(); ++i)
+	for (unsigned int i = 0; i < matrix.rows(); ++i)
 	{
-		for (int j = 0; j < matrix.cols(); ++j)
+		for (unsigned int j = 0; j < matrix.cols(); ++j)
 		{
-			const int LAST_ELEMENT = matrix.cols() - 1;
-
-			os << matrix.matrixVector().at(i * matrix.cols() + j);
-			if (j < LAST_ELEMENT)
-			{
-				os << "    ";
-			}
+			os << matrix.matrixVector().at(i * matrix.cols() + j) << "      ";
 		}
 		os << endl;
 	}
