@@ -233,7 +233,7 @@ public:
 
 			for (unsigned int i = 0; i < _rows; ++i)
 			{
-				threadVector.push_back(thread(oneLineAddition, i, ref(*this), ref(other),
+				threadVector.push_back(thread(_oneLineAddition, i, ref(*this), ref(other),
 											  ref(res)));
 			}
 			for (unsigned int j = 0; j < threadVector.size(); ++j)
@@ -278,7 +278,7 @@ public:
 
 			for (unsigned int i = 0; i < _rows; ++i)
 			{
-				threadVector.push_back(thread(oneLineMultiplication, i, ref(*this),
+				threadVector.push_back(thread(_oneLineMultiplication, i, ref(*this),
 											  ref(other), ref(res)));
 			}
 			for (unsigned int j = 0; j < threadVector.size(); ++j)
@@ -540,7 +540,7 @@ private:
 	 * @param res The matrix that will hold the sum of lMatrix and rMatrix.
 	 */
 	static void _oneLineAddition(unsigned int row, const Matrix<T> &lMatrix,
-	                            const Matrix<T> &rMatrix, Matrix<T> &res)
+								 const Matrix<T> &rMatrix, Matrix<T> &res)
 	{
 		for (unsigned int i = 0; i < res.cols(); ++i)
 		{
@@ -556,7 +556,7 @@ private:
 	 * @param res The matrix that will hold the sum of lMatrix and rMatrix.
 	 */
 	static void _oneLineMultiplication(unsigned int row, const Matrix<T> &lMatrix,
-	                                  const Matrix<T> &rMatrix, Matrix<T> &res)
+									   const Matrix<T> &rMatrix, Matrix<T> &res)
 	{
 		for (unsigned int rMatrixCol = 0; rMatrixCol < rMatrix.cols(); ++rMatrixCol)
 		{
