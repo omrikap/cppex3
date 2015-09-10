@@ -21,12 +21,10 @@
 
 using namespace std;
 
-enum functionType
-{
-	SUM,
-	MULT
-};
-
+/**
+ * A generic matrix class.
+ * This is a tamplate for a matrix that can hold a type T with the
+ */
 template <class T>
 class Matrix
 {
@@ -88,7 +86,7 @@ public:
 	 * This constructor moves a Matrix<T> object from one pointer to another.
 	 * @param other The Matrix<T> object that will be moved to the new pointer.
 	 */
-	Matrix(Matrix<T>&& other) try :_rows(std::move(other._rows)), _cols(std::move(other._cols)),
+	Matrix(Matrix<T> && other) try :_rows(std::move(other._rows)), _cols(std::move(other._cols)),
 	                           _matrixVectorSize(std::move(other._matrixVectorSize)),
 	                           _data(std::move(other._data))
 	{
@@ -541,7 +539,7 @@ private:
 	 * @param rMatrix The matrix to the right of the operator.
 	 * @param res The matrix that will hold the sum of lMatrix and rMatrix.
 	 */
-	static void oneLineAddition(unsigned int row, const Matrix<T> &lMatrix,
+	static void _oneLineAddition(unsigned int row, const Matrix<T> &lMatrix,
 	                            const Matrix<T> &rMatrix, Matrix<T> &res)
 	{
 		for (unsigned int i = 0; i < res.cols(); ++i)
@@ -557,7 +555,7 @@ private:
 	 * @param rMatrix The matrix to the right of the operator.
 	 * @param res The matrix that will hold the sum of lMatrix and rMatrix.
 	 */
-	static void oneLineMultiplication(unsigned int row, const Matrix<T> &lMatrix,
+	static void _oneLineMultiplication(unsigned int row, const Matrix<T> &lMatrix,
 	                                  const Matrix<T> &rMatrix, Matrix<T> &res)
 	{
 		for (unsigned int rMatrixCol = 0; rMatrixCol < rMatrix.cols(); ++rMatrixCol)
