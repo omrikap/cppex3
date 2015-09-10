@@ -5,6 +5,7 @@
 
 //---------------------------------- const and includes -------------------------------------------
 
+#include <iostream>
 #include <vector>
 #include <iterator>
 #include <thread>
@@ -125,7 +126,7 @@ public:
 	 */
 	~Matrix()
 	{
-		_data.clear(); // todo needed? check with valgrind.
+		_data.clear();
 	}
 
 //--------------------------------------- operators -----------------------------------------------
@@ -428,7 +429,7 @@ public:
 	 * @param first The first matrix.
 	 * @param second The second matrix.
 	 */
-	friend void swap(Matrix<T>& first, Matrix<T>& second) // todo why error?
+	friend void swap(Matrix<T>& first, Matrix<T>& second)
 	{
 		using std::swap;
 		swap(first._rows, second._rows);
@@ -441,7 +442,7 @@ public:
 	 * A static function to select parallel computation mod.
 	 * @param setter A boolean value to determine the parallel mod.
 	 */
-	static void setParallel(bool setter) // todo test
+	static void setParallel(bool setter)
 	{
 		if (setter == s_parallel)
 		{
