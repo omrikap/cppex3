@@ -18,7 +18,7 @@ template <class T>
 class Matrix
 {
 public:
-
+	// todo add catch bad_alloc in every constructor.
 //-------------------------------------- constructors ---------------------------------------------
 
 	/**
@@ -135,8 +135,6 @@ public:
 		return *this;
 	}
 
-	// todo move assignement operator? gets rValue
-
 	/**
      * The += operator.
      * Add the matrix on the right side of the operator from this matrix (on the left side).
@@ -221,13 +219,6 @@ public:
 			Matrix<T> result = *this;
 			result += other;
 			return result;
-
-//			vector<T> resultVector(_matrixVectorSize);
-//			for (int i = 0; i < _matrixVectorSize; ++i)
-//			{
-//				resultVector.at(i) = _matrix.at(i) + other._matrix.at(i);
-//			}
-//			return Matrix<T>(_rows, _cols, resultVector);
 		}
 		else
 		{
@@ -294,32 +285,33 @@ public:
 
 	/**
 	 * The == operator.
-	 * todo
+	 * Check the equality of two matrices.
+	 * @return bool true if the matrices are equal, false else.
 	 */
 	bool operator==(const Matrix<T> &other) const
 	{
+		if(other._matrixVectorSize != _matrixVectorSize)
+		{
+			return false;
+		}
+
+		if(other._cols != _cols)
+		{
+			return false;
+		}
+
+		if(other._rows != _rows)
+		{
+			return false;
+		}
+
 		return other._matrix == _matrix;
-
-//		if(other._matrixVectorSize != _matrixVectorSize) // fixme
-//		{
-//			return false;
-//		}
-//
-//		if(other._cols != _cols)
-//		{
-//			return false;
-//		}
-//
-//		if(other._rows != _rows)
-//		{
-//			return false;
-//		}
-
 	}
 
 	/**
 	 * The != operator.
-	 * todo
+	 * Check the inequality of two matrices.
+	 * @return bool true if the matrices are not equal, false else.
 	 */
 	bool operator!=(const Matrix<T> &other) const
 	{
