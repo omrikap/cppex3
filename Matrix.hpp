@@ -616,12 +616,11 @@ bool Matrix<T>::s_parallel = false;
 template <class T>
 ostream& operator<<(ostream &os, const Matrix<T> &matrix)
 {
-	os << endl;
 	for (unsigned int i = 0; i < matrix.rows(); ++i)
 	{
 		for (unsigned int j = 0; j < matrix.cols(); ++j)
 		{
-			os << matrix.matrixVector().at(i * matrix.cols() + j) << "      ";
+			os << matrix.matrixVector().at(i * matrix.cols() + j) << "	";
 		}
 		os << endl;
 	}

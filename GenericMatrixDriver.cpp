@@ -61,7 +61,7 @@ const T readScalarLine();
 
 int main()
 {
-	Matrix<Complex>::setParallel(true); // change to parallel mode.
+//	Matrix<Complex>::setParallel(true); // change to parallel mode.
 	std::cout << "Choose the scalar field of the components of the matrix" << std::endl;
 	std::cout << "(" << INT << " for ints, " << DOUBLE << " for double or " 
 		  << COMPLEX << " for Complex):" << std::endl;
