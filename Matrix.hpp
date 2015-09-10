@@ -450,12 +450,12 @@ public:
 		else if (setter)
 		{
 			s_parallel = true;
-			std::cout << "Generix Matrix mode changed to parallel mode\n";
+			cout << "Generix Matrix mode changed to parallel mode\n";
 		}
 		else
 		{
 			s_parallel = false;
-			std::cout << "Generix Matrix mode changed to non-parallel mode\n";
+			cout << "Generix Matrix mode changed to non-parallel mode\n";
 		}
 	}
 
