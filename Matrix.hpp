@@ -3,6 +3,7 @@
 #ifndef EX3_MATRIX_H
 #define EX3_MATRIX_H
 
+#include <iostream>
 #include <vector>
 #include <iterator>
 #include <thread>
@@ -10,6 +11,7 @@
 #include "MatrixNotSquare.hpp"
 #include "DimensionZeroMatrix.hpp"
 #include "OutOfMatrixRange.hpp"
+#include "BadMemoryAlloc.hpp"
 
 using namespace std; // todo remove
 
@@ -26,15 +28,19 @@ public:
 	 * @return A new Matrix object of size 1x1.
 	 * @throw bad_alloc exception if memory allocation did not succeed.
 	 */
-	Matrix() : _rows(1), _cols(1), _matrixVectorSize(1)
+	Matrix() try : _rows(1), _cols(1), _matrixVectorSize(1), _matrix(_matrixVectorSize, T(0))
 	{
-		// initialize the size of the matrix.
-		_rows = 1;
-		_cols = 1;
-		_matrixVectorSize = 1;
-
-		// put zero in the only cell of the matrix.
-		_matrix.push_back(T(0));
+//		// initialize the size of the matrix.
+//		_rows = 1;
+//		_cols = 1;
+//		_matrixVectorSize = 1;
+//
+//		// put zero in the only cell of the matrix.
+//		_matrix.push_back(T(0));
+	}
+	catch (bad_alloc)
+	{
+		throw BadMemoryAlloc;
 	}
 
 	/**
@@ -44,15 +50,21 @@ public:
 	 * @return A Matrix object with the specified number of rows and columns, that is initialized
 	 *         with the zeros of the type T.
 	 */
-	Matrix(unsigned int rows, unsigned int cols) : _rows(rows), _cols(cols), _matrixVectorSize
-			(rows * cols)
+	Matrix(unsigned int rows, unsigned int cols) try : _rows(rows), _cols(cols),
+	                                                   _matrixVectorSize(rows * cols),
+	                                                   _matrix(_matrixVectorSize, T(0))
 	{
 		// put T zeros in the vector.
-		for (int i = 0; i < _matrixVectorSize; ++i)
-		{
-			_matrix.push_back(T(0));
-		}
+//		for (int i = 0; i < _matrixVectorSize; ++i)
+//		{
+//			_matrix.push_back(T(0));
+//		}
 	}
+	catch (bad_alloc)
+	{
+		throw BadMemoryAlloc;
+	}
+
 
 	/**
 	 * A copy constructor.
@@ -60,29 +72,41 @@ public:
 	 * @param other The Matrix object to be copied.
 	 * @return A new Matrix object that is a copy of the other Matrix object.
 	 */
-	Matrix(const Matrix<T>& other) : _rows(other._rows), _cols(other._cols), _matrixVectorSize
-			(other._matrixVectorSize)
+	Matrix(const Matrix<T>& other) try : _rows(other._rows), _cols(other._cols),
+	                                     _matrixVectorSize(other._matrixVectorSize),
+	                                     _matrix(other._matrix)
 	{
 		// copy the matrix elements from the other matrix to the new one.
-		for (int i = 0; i < _matrixVectorSize; ++i)
-		{
-			_matrix.push_back(other._matrix[i]);
-		}
+//		for (int i = 0; i < _matrixVectorSize; ++i)
+//		{
+//			_matrix.at(i) = other._matrix[i];
+//		}
 	}
+	catch (bad_alloc)
+	{
+		throw BadMemoryAlloc;
+	}
+
 
 	/**
 	 * A move constructor.
 	 * This constructor moves a Matrix<T> object from one pointer to another.
 	 * @param other The Matrix<T> object that will be moved to the new pointer.
 	 */
-	Matrix(Matrix<T>&& other) :_rows(other._rows), _cols(other._cols), _matrixVectorSize
-	(other._matrixVectorSize)
+	Matrix(Matrix<T>&& other) try :_rows(std::move(other._rows)), _cols(std::move(other._cols)),
+	                           _matrixVectorSize(std::move(other._matrixVectorSize)),
+	                           _matrix(std::move(other._matrix))
 	{
-		_rows = move(other._rows);
-		_cols = move(other._cols);
-		_matrix = move(other._matrix);
-		_matrixVectorSize = move(other._matrixVectorSize);
+//		_rows = move(other._rows);
+//		_cols = move(other._cols);
+//		_matrix = move(other._matrix);
+//		_matrixVectorSize = move(other._matrixVectorSize);
 	}
+	catch (bad_alloc)
+	{
+		throw BadMemoryAlloc;
+	}
+
 
 	/**
 	 * A constructor that get the dimensions of the new Matrix and its values as a vector.
@@ -92,23 +116,29 @@ public:
 	 * @return A Matrix object with the specified number of rows and columns, that is initialized
 	 *         with the zeros of the type T.
 	 */
-	Matrix(unsigned int rows, unsigned int cols, const vector<T>& cells) : _rows(rows), _cols
-			(cols), _matrixVectorSize(rows * cols) // fixme coding style
+	Matrix(unsigned int rows, unsigned int cols, const vector<T>& cells) try : _rows(rows),
+	                                                                       _cols(cols),
+	                                                                       _matrixVectorSize(rows * cols),
+	                                                                       _matrix(cells) // fixme coding style
 	{
 		// verify the vector not exceed the matrix size.
 //		if (cells.size() > _matrixVectorSize)
 //		{
 //			throw OutOfMatrixRange;
 //		}
-
-		// allocate the exact amount of memory
-		_matrix.resize(_matrixVectorSize);
-
-		// initialize the matrix cells
-		for (int i = 0; i < _matrixVectorSize; ++i)
-		{
-			_matrix.at(i) = cells.at(i);
-		}
+//
+//		// allocate the exact amount of memory
+//		_matrix.resize(_matrixVectorSize);
+//
+//		// initialize the matrix cells
+//		for (int i = 0; i < _matrixVectorSize; ++i)
+//		{
+//			_matrix.at(i) = cells.at(i);
+//		}
+	}
+	catch (bad_alloc)
+	{
+		throw BadMemoryAlloc;
 	}
 
 	/**
@@ -146,7 +176,7 @@ public:
 		if (_rows != other._rows || _cols != other._cols)
 		{
 //			throw
-			cout << "should throw WrongDimensionException\n"; // todo remove
+			std::cout << "should throw WrongDimensionException\n"; // todo remove
 		}
 
 		for (int i = 0; i < _matrixVectorSize; ++i)
@@ -212,7 +242,7 @@ public:
 	 * @param other A reference to another Matrix<T> object.
 	 * @return Matrix<T> object which is the sum of the two matrices.
 	 */
-	const Matrix<T> operator+(const Matrix<T> &other)
+	const Matrix<T> operator+(const Matrix<T> &other) const
 	{
 		if (!s_parallel)
 		{
@@ -244,7 +274,7 @@ public:
 	 * @param other A reference to another Matrix<T> object.
 	 * @return Matrix<T> object which is the difference of the two matrices.
 	 */
-	const Matrix<T> operator-(const Matrix<T> &other)
+	const Matrix<T> operator-(const Matrix<T> &other) const
 	{
 		Matrix<T> result = *this;
 		result -= other;
@@ -257,7 +287,7 @@ public:
 	 * @param other A reference to another Matrix<T> object.
 	 * @return Matrix<T> object which is the product of the two matrices.
 	 */
-	const Matrix<T> operator*(const Matrix<T> &other)
+	const Matrix<T> operator*(const Matrix<T> &other) const
 	{
 		if (!s_parallel)
 		{
@@ -430,7 +460,7 @@ public:
 
 			if (!s_parallel)
 			{
-				cout << "_multithread is true" << endl;
+				std::cout << "_multithread is true" << endl;
 			}
 		}
 		else
@@ -439,7 +469,7 @@ public:
 
 			if (s_parallel)
 			{
-				cout << "_multithread is true" << endl;
+				std::cout << "_multithread is true" << endl;
 			}
 		}
 	}

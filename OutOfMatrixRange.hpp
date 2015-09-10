@@ -1,9 +1,9 @@
 // OutOfMatrixRange.hpp
 
-#include <exception>
-
 #ifndef EX3_OUTOFMATRIXRANGE_HPP
 #define EX3_OUTOFMATRIXRANGE_HPP
+
+#include <exception>
 
 class OutOfMatrixRange : public std::exception
 {
