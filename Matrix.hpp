@@ -148,7 +148,7 @@ public:
 		if (_rows != other._rows || _cols != other._cols)
 		{
 //			throw
-			cout << "should throw WrongDimensionException\n";
+			cout << "should throw WrongDimensionException\n"; // todo remove
 		}
 
 		for (int i = 0; i < _matrixVectorSize; ++i)
@@ -191,7 +191,7 @@ public:
 		{
 			for (int otherCol = 0; otherCol < other._cols; ++otherCol)
 			{
-				int dotProduct = 0;
+				T dotProduct = 0;
 				for (int col = 0; col < _cols; ++col)
 				{
 					dotProduct += (*this)(row, col) * other(col, otherCol);
@@ -221,6 +221,13 @@ public:
 			Matrix<T> result = *this;
 			result += other;
 			return result;
+
+//			vector<T> resultVector(_matrixVectorSize);
+//			for (int i = 0; i < _matrixVectorSize; ++i)
+//			{
+//				resultVector.at(i) = _matrix.at(i) + other._matrix.at(i);
+//			}
+//			return Matrix<T>(_rows, _cols, resultVector);
 		}
 		else
 		{
@@ -229,8 +236,8 @@ public:
 
 			for (unsigned int i = 0; i < _rows; ++i)
 			{
-				threadVector.push_back(thread(oneLineAddition, i, ref(*this),
-				                                   ref(other), ref(res)));
+				threadVector.push_back(thread(oneLineAddition, i, ref(*this), ref(other),
+				                              ref(res)));
 			}
 			for (unsigned int j = 0; j < threadVector.size(); ++j)
 			{
@@ -355,7 +362,7 @@ public:
 	 * Transpose this matrix.
 	 * @return A new Matrix<T> instance which is the transposition of the given matrix.
 	 */
-	Matrix<T> trans()
+	const Matrix<T> trans() const
 	{
 		if ((_rows == 0) || (_cols == 0))
 		{
@@ -378,8 +385,6 @@ public:
 		// return a new transposed matrix
 		return Matrix<T>(_cols, _rows, transposed);
 	}
-
-	// todo Complex trans
 
 	/**
 	 * @brief Calculate the trace of a square matrix.
@@ -485,7 +490,31 @@ public:
 		return _matrix;
 	}
 
+	bool isSquareMatrix() const
+	{
+		return (_rows == _cols);
+	}
+
+	typedef typename std::vector<T>::iterator iterator; /** An iterator type */
 	typedef typename std::vector<T>::const_iterator const_iterator; /** A constant iterator type */
+
+	/**
+	 * An iterator at the beginning of the matrix.
+	 * @return iterator
+	 */
+	iterator begin() // todo test, add const function?
+	{
+		return _matrix.begin();
+	}
+
+	/**
+	 * An iterator at the end of the matrix.
+	 * @return iterator
+	 */
+	iterator end() // todo test, add const function?
+	{
+		return _matrix.end();
+	}
 
 	/**
 	 * An iterator at the beginning of the matrix.
@@ -539,7 +568,7 @@ private:
 	{
 		for (unsigned int rMatrixCol = 0; rMatrixCol < rMatrix.cols(); ++rMatrixCol)
 		{
-			int dotProduct = 0;
+			T dotProduct = 0;
 			for (unsigned int lMatrixCol = 0; lMatrixCol < lMatrix.cols(); ++lMatrixCol)
 			{
 				dotProduct += lMatrix(row, lMatrixCol) * rMatrix(lMatrixCol, rMatrixCol);
@@ -548,6 +577,31 @@ private:
 		}
 	}
 };
+
+template <>
+const Matrix<Complex> Matrix<Complex>::trans() const
+{
+	if ((_rows == 0) || (_cols == 0))
+	{
+		throw OutOfMatrixRange;
+	}
+
+	// create a vector for the transposed matrix cells, and allocate exact memory size
+	vector<Complex> transposed;
+	transposed.resize(_matrixVectorSize);
+
+	// transpose the matrix
+	for (int row = 0; row < _rows; ++row)
+	{
+		for (int col = 0; col < _cols; ++col)
+		{
+			transposed.at((col * _rows) + row) = _matrix.at((row * _cols) + col).conj();
+		}
+	}
+
+	// return a new transposed matrix
+	return Matrix<Complex>(_cols, _rows, transposed);
+}
 
 //------------------------------------- end-of-class ----------------------------------------------
 

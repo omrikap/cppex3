@@ -3,5 +3,6 @@ project(ex3)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lpthread")
 
-set(SOURCE_FILES MatrixDriver.cpp Matrix.hpp MatrixNotSquare.hpp DimensionZeroMatrix.hpp OutOfMatrixRange.hpp)
+set(SOURCE_FILES GenericMatrixDriver.cpp Matrix.hpp MatrixNotSquare.hpp DimensionZeroMatrix.hpp
+        OutOfMatrixRange.hpp Complex.cpp Complex.h)
 add_executable(ex3 ${SOURCE_FILES})

@@ -89,5 +89,22 @@ int main()
 	{
 		cout << *it << endl;
 	}
+
+	Complex a(23.1, 22.3);
+	Complex b(3.1, 22);
+	Complex c(1, 2.3);
+	Complex d(3, 2);
+
+	vector<Complex> cVec;
+	cVec.push_back(a);
+	cVec.push_back(b);
+	cVec.push_back(c);
+	cVec.push_back(d);
+
+	Matrix<Complex> cMatrix(2, 2, cVec);
+
+	cout << cMatrix.trans();
+
+
 	return 0;
 }
