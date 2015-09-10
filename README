@@ -1,1 +1,23 @@
-file not empty
+
+ +--------------------------------+----------------------------------------+
+ |               big              |                small                   |
+ +--------------------------------+----------------------------------------+
+ |       +        |       *       |        *         |          +          |
+ +----------------+---------------+------------------+---------------------+
+ |                |               |                  |                     |
+ | 0.0592733sec   |   1.38934sec  |   0.000124173sec |     0.000160601sec  |  parallel
+ +----------------+---------------+------------------+---------------------+
+ |                |               |                  |                     |
+ | 0.0123527sec   |   19.3726sec  |   1.449e-06sec   |     6.15e-07sec     |   sequential
+ |                |               |                  |                     |
+ +----------------+---------------+------------------+---------------------+
+
+
+i) There is a difference between the 2 sets of data. With big data, the program perform faster in
+   parallel mod, while with smaller data it perform faster in sequential. The difference comes from
+   the "cost" of opening and closing new threads. If the data is big enough, it pays off, but if
+   it's too small, it's just make the process more complicated.
+
+ii) There is a difference between sum operation and multiplication. It is related to the
+	multiplication algorithm, which is n^3 on square matrices, in compare to the linear
+	complexity of the sum operation.
