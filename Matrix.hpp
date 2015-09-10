@@ -266,7 +266,20 @@ public:
 		}
 		else
 		{
-			return parallelHelper(functionType::SUM, other);
+//			return parallelHelper(functionType::SUM, other);
+			Matrix<T> res(_rows, _cols);
+			vector<thread> threadVector;
+
+			for (unsigned int i = 0; i < _rows; ++i)
+			{
+				threadVector.push_back(thread(oneLineAddition, i, ref(*this), ref(other),
+											  ref(res)));
+			}
+			for (unsigned int j = 0; j < threadVector.size(); ++j)
+			{
+				threadVector.at(j).join();
+			}
+			return res;
 		}
 	}
 
@@ -299,7 +312,20 @@ public:
 		}
 		else
 		{
-			return parallelHelper(functionType::MULT, other);
+//			return parallelHelper(functionType::MULT, other);
+			Matrix<T> res(_rows, _cols);
+			vector<thread> threadVector;
+
+			for (unsigned int i = 0; i < _rows; ++i)
+			{
+				threadVector.push_back(thread(oneLineMultiplication, i, ref(*this),
+											  ref(other), ref(res)));
+			}
+			for (unsigned int j = 0; j < threadVector.size(); ++j)
+			{
+				threadVector.at(j).join();
+			}
+			return res;
 		}
 	}
 
